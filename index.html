@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFFY 3.0 | Hurt - Johnny Cash</title>
+    
+    <!-- Fonts: Outfit (UI), Montserrat (Impact), Special Elite (Analog Typewriter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Outfit:wght@300;400;600;700;800&family=Special+Elite&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        studio: {
+                            black: '#050505',
+                            dark: '#111111',
+                            panel: '#1a1a1a',
+                            gold: '#d4af37',
+                            red: '#e11d48',
+                            glow: 'rgba(225, 29, 72, 0.6)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        impact: ['Montserrat', 'sans-serif'],
+                        typewriter: ['"Special Elite"', 'monospace'],
+                        mono: ['"Share Tech Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #050505; color: #fff; overflow: hidden; 
+            font-family: 'Outfit', sans-serif; user-select: none; 
+        }
+
+        /* ANALOG AESTHETIC BACKGROUNDS */
+        .analog-noise {
+            position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .valve-glow {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(circle at 50% 120%, rgba(225, 29, 72, 0.1) 0%, transparent 60%);
+        }
+
+        /* SLIDE SYSTEM */
+        .slide-container { display: flex; flex-direction: column; overflow-y: auto; height: calc(100vh - 100px); scroll-behavior: smooth; position: relative; z-index: 10; }
+        .slide { display: none; opacity: 0; width: 100%; min-height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; transition: opacity 0.5s ease; }
+        .slide.active { display: flex; opacity: 1; animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .slide::before, .slide::after { content: ''; margin: auto; }
+
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(30px); filter: blur(4px); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        /* UI ELEMENTS */
+        .analog-panel {
+            background: linear-gradient(145deg, #161616, #111111);
+            border: 1px solid #333; border-top: 1px solid #444;
+            border-radius: 12px; box-shadow: 10px 10px 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        /* POLAROIDS (Dark Grunge) */
+        .polaroid {
+            background: #1a1a1a; padding: 12px 12px 30px 12px; border-radius: 4px;
+            border: 1px solid #333; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+            position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        }
+        .polaroid:hover { transform: translateY(-10px) rotate(-1deg); border-color: #d4af37; box-shadow: 0 15px 30px rgba(212, 175, 55, 0.15); }
+        .polaroid-img { width: 100%; aspect-ratio: 1/1; background: #050505; border: 1px solid #222; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; overflow: hidden; }
+        .polaroid-emoji { opacity: 0.2; filter: grayscale(100%); transition: all 1.5s ease; transform: scale(0.8); }
+        .polaroid.developed .polaroid-emoji { opacity: 1; filter: grayscale(0%); transform: scale(1); text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+        .polaroid-text { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; color: #666; font-family: 'Special Elite', monospace; font-size: 16px; opacity: 0; transition: opacity 1s; }
+        .polaroid.developed .polaroid-text { opacity: 1; color: #d4af37; }
+
+        /* BUTTONS & ANIMATIONS */
+        .btn-gold {
+            background: linear-gradient(90deg, #d4af37, #b8962e); color: #000; font-family: 'Montserrat', sans-serif; font-weight: 900;
+            padding: 16px 36px; border-radius: 4px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 2px;
+            border: 1px solid #ffe89e; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .btn-gold:hover { transform: scale(1.02); box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5); }
+        .btn-gold:active { transform: scale(0.98); }
+
+        .rec-glow { animation: recPulse 2s infinite; }
+        @keyframes recPulse {
+            0% { box-shadow: 0 0 10px rgba(225,29,72,0.4); }
+            50% { box-shadow: 0 0 30px rgba(225,29,72,0.8), inset 0 0 10px rgba(225,29,72,0.5); }
+            100% { box-shadow: 0 0 10px rgba(225,29,72,0.4); }
+        }
+
+        .shake { animation: shake 0.4s both; border-color: #e11d48 !important; color: #e11d48 !important; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+
+        /* THE AMPLIFIER DIAL */
+        .amp-dial-container { width: 140px; height: 140px; border-radius: 50%; background: #111; border: 4px solid #222; position: relative; cursor: pointer; box-shadow: 0 15px 30px rgba(0,0,0,0.9), inset 0 2px 5px rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; }
+        .amp-dial { width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle, #333, #1a1a1a); position: relative; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: inset 0 2px 5px rgba(255,255,255,0.1); }
+        .amp-indicator { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 4px; height: 20px; background: #e11d48; border-radius: 2px; box-shadow: 0 0 10px #e11d48; }
+        .dial-marks { position: absolute; inset: -15px; border-radius: 50%; border: 2px dashed #444; pointer-events: none; }
+
+        /* LYRIC HACKER */
+        .lyric-hl { color: #888; cursor: pointer; border-bottom: 1px dashed #666; transition: 0.3s; padding: 0 4px; }
+        .lyric-hl:hover { color: #d4af37; text-shadow: 0 0 10px rgba(212,175,55,0.4); border-bottom-color: #d4af37; }
+        .lyric-hl.active { color: #000; background: #d4af37; border-bottom: 2px solid #d4af37; text-shadow: none; font-weight: bold; }
+
+        /* UTILS */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .vinyl-spin { animation: spin 4s linear infinite; }
+        .paused { animation-play-state: paused; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .drawer-left { transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .drawer-left.open { transform: translateX(0); }
+    </style>
+</head>
+<body class="h-screen w-screen relative overflow-hidden flex flex-col">
+
+    <div class="valve-glow"></div>
+    <div class="analog-noise"></div>
+
+    <!-- TEACHER TOOLSET (Drawer) -->
+    <aside id="teacher-panel" class="fixed top-0 left-0 h-full w-full md:w-[450px] bg-studio-dark border-r border-[#333] z-[60] drawer-left flex flex-col shadow-[20px_0_50px_rgba(0,0,0,0.9)] pb-[100px]">
+        <div class="p-6 border-b border-[#333] flex justify-between items-center bg-[#0a0a0a]">
+            <h2 class="font-impact font-black text-2xl text-studio-gold uppercase tracking-widest"><i class="fa-solid fa-sliders mr-2"></i>Director</h2>
+            <button onclick="toggleTeacher()" class="text-gray-500 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="p-6 border-b border-[#333] bg-[#111]">
+            <p class="text-[10px] font-mono text-gray-500 uppercase font-bold tracking-widest mb-4">Instant Feedback</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="praise('FLAWLESS')" class="bg-[#1a1a1a] border border-studio-gold text-studio-gold py-3 text-sm font-bold rounded hover:bg-studio-gold hover:text-black transition-colors font-impact tracking-wider">FLAWLESS</button>
+                <button onclick="praise('DEEP')" class="bg-[#1a1a1a] border border-studio-red text-studio-red py-3 text-sm font-bold rounded hover:bg-studio-red hover:text-white transition-colors font-impact tracking-wider">DEEP</button>
+            </div>
+        </div>
+
+        <div class="flex-1 p-6 relative flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <p class="text-[10px] font-mono text-gray-500 uppercase font-bold tracking-widest">Studio Notes</p>
+                <button onclick="document.getElementById('notes').value=''" class="text-xs text-gray-500 hover:text-red-400 font-bold uppercase"><i class="fa-solid fa-trash mr-1"></i></button>
+            </div>
+            <textarea id="notes" class="flex-1 w-full bg-[#0a0a0a] border border-[#333] rounded p-4 text-studio-gold font-typewriter text-xl leading-relaxed resize-none focus:outline-none focus:border-studio-gold shadow-inner" placeholder="Log grammar mistakes or vocabulary here..."></textarea>
+        </div>
+    </aside>
+
+    <!-- PRAISE OVERLAY -->
+    <div id="praise-overlay" class="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <h1 id="praise-text" class="text-7xl md:text-9xl font-black font-impact text-white tracking-widest uppercase drop-shadow-[0_0_40px_rgba(212,175,55,0.8)] transform scale-50 transition-transform duration-500">FLAWLESS</h1>
+    </div>
+
+    <!-- MAIN SLIDE CONTAINER -->
+    <main id="stage" class="flex-1 overflow-y-auto hide-scroll pb-32 slide-container">
+        
+        <!-- TRACK 01: COVER -->
+        <section class="slide active">
+            <div class="analog-panel p-10 max-w-4xl w-full flex flex-col md:flex-row items-center gap-12 relative overflow-visible">
+                <div class="relative w-64 h-64 md:w-80 md:h-80 shrink-0 group">
+                    <!-- Spinning Vinyl Peeking -->
+                    <div class="absolute inset-y-0 right-0 w-full h-full rounded-full bg-[#050505] border-8 border-[#222] flex items-center justify-center vinyl-spin shadow-2xl transition-transform duration-700 group-hover:translate-x-12 z-10">
+                        <div class="w-24 h-24 rounded-full bg-studio-gold border-4 border-[#111] flex flex-col items-center justify-center shadow-inner relative z-10">
+                            <div class="w-4 h-4 rounded-full bg-black"></div>
+                            <span class="text-[8px] font-black font-impact mt-2 uppercase">Cash</span>
+                        </div>
+                        <div class="absolute inset-2 rounded-full border border-white/5"></div>
+                        <div class="absolute inset-6 rounded-full border border-white/5"></div>
+                        <div class="absolute inset-10 rounded-full border border-white/5"></div>
+                        <div class="absolute inset-14 rounded-full border border-white/5"></div>
+                    </div>
+                    <!-- Album Cover -->
+                    <img src="https://cdn-images.dzcdn.net/images/cover/3ee70b0cf1729759dbe18934ea34c8c1/1900x1900-000000-80-0-0.jpg" alt="Hurt Album Cover" class="absolute inset-0 w-full h-full object-cover rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.9)] border border-[#333] z-20 transition-transform duration-700 group-hover:scale-105">
+                </div>
+                <div class="text-center md:text-left">
+                    <span class="bg-studio-red text-white px-3 py-1 font-bold text-[10px] font-mono tracking-widest rounded mb-4 inline-block uppercase">B2 Upper-Intermediate</span>
+                    <h1 class="text-6xl md:text-8xl font-impact font-black leading-none mb-2 uppercase tracking-tighter text-white">Hurt</h1>
+                    <p class="text-2xl text-studio-gold font-typewriter uppercase tracking-widest mb-8 border-b border-[#333] pb-4 inline-block">Johnny Cash</p>
+                    
+                    <div class="space-y-3 font-mono text-xs text-gray-400">
+                        <p><strong class="text-white">Grammar:</strong> Second Conditional & Wish</p>
+                        <p><strong class="text-white">Theme:</strong> Legacy, Mortality, Regret</p>
+                        <p><strong class="text-white">Mission:</strong> High-Pressure Argumentation</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 02: BRIEFING -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 02: Setup</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">The Conditions</h1>
+            
+            <div class="analog-panel p-10 md:p-14 w-full max-w-4xl mx-auto border-t-4 border-studio-gold text-left relative">
+                <div class="absolute top-0 right-10 w-8 h-2 bg-studio-gold rounded-b"></div>
+                <div class="flex items-center gap-4 mb-8 border-b border-[#333] pb-6">
+                    <i class="fa-solid fa-sliders text-3xl text-studio-gold"></i>
+                    <h3 class="font-impact text-2xl text-white uppercase tracking-widest">Grammar Frequency</h3>
+                </div>
+                <div class="space-y-6 text-xl leading-relaxed text-gray-300 font-typewriter">
+                    <p>In this session, we manipulate reality.</p>
+                    <p class="bg-[#0a0a0a] p-6 rounded border border-[#333] text-lg font-sans">
+                        We use the <strong class="text-studio-gold">Second Conditional</strong> to talk about imaginary, hypothetical situations in the present or future.<br><br>
+                        <span class="text-gray-500 text-base italic">It is the language of dreams... and deep regrets.</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 03: VIBE CHECK -->
+        <section class="slide">
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-8 text-center uppercase tracking-widest">Vibe Check</h1>
+            <p class="text-xl font-typewriter text-gray-400 mb-12 text-center max-w-3xl">When you look back at your past, which emotion plays the loudest?</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+                <button onclick="vibe(this, 'Gratitude')" class="analog-panel p-8 text-center hover:border-studio-gold transition-all border-b-4 border-b-transparent mcq-btn group">
+                    <i class="fa-solid fa-hands-praying text-4xl text-gray-600 group-hover:text-studio-gold mb-4 transition-colors"></i>
+                    <p class="text-2xl font-impact font-black text-white uppercase tracking-wider">Gratitude</p>
+                    <p class="text-xs font-mono text-gray-500 mt-2 uppercase">Happy for the journey</p>
+                </button>
+                <button onclick="vibe(this, 'Nostalgia')" class="analog-panel p-8 text-center hover:border-studio-gold transition-all border-b-4 border-b-transparent mcq-btn group">
+                    <i class="fa-solid fa-film text-4xl text-gray-600 group-hover:text-studio-gold mb-4 transition-colors"></i>
+                    <p class="text-2xl font-impact font-black text-white uppercase tracking-wider">Nostalgia</p>
+                    <p class="text-xs font-mono text-gray-500 mt-2 uppercase">Missing the old days</p>
+                </button>
+                <button onclick="vibe(this, 'Regret')" class="analog-panel p-8 text-center hover:border-studio-gold transition-all border-b-4 border-b-transparent mcq-btn group">
+                    <i class="fa-solid fa-clock-rotate-left text-4xl text-gray-600 group-hover:text-studio-gold mb-4 transition-colors"></i>
+                    <p class="text-2xl font-impact font-black text-white uppercase tracking-wider">Regret</p>
+                    <p class="text-xs font-mono text-gray-500 mt-2 uppercase">Wishing to rewrite</p>
+                </button>
+            </div>
+            <div id="vibe-hub" class="hidden mt-10 p-6 bg-[#111] rounded border-l-4 border-studio-gold w-full max-w-5xl text-left shadow-lg">
+                <p class="text-studio-gold font-mono text-[10px] font-bold uppercase mb-2 tracking-widest">Mic is Live</p>
+                <p class="text-2xl font-bold text-white">Explain to your director why that emotion is the loudest.</p>
+            </div>
+        </section>
+
+        <!-- TRACK 04: TRIVIA -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 04: The Origins</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-10 uppercase tracking-widest text-center">The Greatest Cover?</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="analog-panel p-8 flex flex-col justify-center">
+                    <p class="text-xl font-typewriter text-gray-300 leading-relaxed mb-6">Johnny Cash didn't write this song. When the original writer heard Cash's version, he said:<br><br><span class="text-white font-bold">"That song isn't mine anymore."</span></p>
+                    <p class="text-sm font-mono text-studio-gold uppercase">Who wrote the original?</p>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <button onclick="checkTrivia(this, false)" class="analog-panel p-6 text-left hover:bg-[#1a1a1a] transition-colors border-l-4 border-transparent">
+                        <span class="font-impact font-black text-2xl text-gray-400 uppercase tracking-wider">A. Nirvana</span>
+                    </button>
+                    <button onclick="checkTrivia(this, true)" class="analog-panel p-6 text-left hover:bg-[#1a1a1a] transition-colors border-l-4 border-transparent">
+                        <span class="font-impact font-black text-2xl text-gray-400 uppercase tracking-wider">B. Nine Inch Nails</span>
+                    </button>
+                    <button onclick="checkTrivia(this, false)" class="analog-panel p-6 text-left hover:bg-[#1a1a1a] transition-colors border-l-4 border-transparent">
+                        <span class="font-impact font-black text-2xl text-gray-400 uppercase tracking-wider">C. Pearl Jam</span>
+                    </button>
+                </div>
+            </div>
+            <div id="trivia-hub" class="hidden mt-8 w-full max-w-5xl text-left">
+                <p class="text-gray-400 font-sans text-lg">Trent Reznor wrote it about self-harm as a young man. Cash, at 71, turned it into an old man's look back at a life of regrets and fading fame.</p>
+            </div>
+        </section>
+
+        <!-- TRACK 05: PRE-LISTENING (DEEP DIVE) -->
+        <section class="slide">
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-6 uppercase tracking-widest text-center text-studio-red rec-glow p-4 rounded-full inline-block border border-studio-red/30 bg-[#111]">Deep Dive</h1>
+            <p class="text-2xl font-typewriter text-gray-300 mb-12 text-center max-w-4xl">Cash was 71 and in failing health when he filmed this video.</p>
+            
+            <div class="analog-panel p-10 md:p-14 w-full max-w-4xl mx-auto border-t-4 border-studio-red text-center shadow-2xl">
+                <p class="font-impact font-black text-3xl md:text-4xl text-white leading-tight mb-8 tracking-wider uppercase">"If you knew you only had 6 months left to live, what would you think about the most?"</p>
+                <div class="h-px w-full bg-[#333] mb-8"></div>
+                <p class="font-mono text-gray-500 text-sm uppercase tracking-widest">Your achievements? Your mistakes? The people you loved?</p>
+            </div>
+        </section>
+
+        <!-- TRACK 06: LEXICON I -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 06: Lexicon</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-6 uppercase tracking-widest text-center">Abstract Concepts</h1>
+            <p class="font-mono text-gray-500 text-xs mb-10 text-center uppercase tracking-widest">Develop the film to reveal the metaphors</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-4xl mx-auto">
+                <div class="polaroid" onclick="developPolaroid(this, 'Empire of dirt', 'Everything built over a lifetime (wealth, fame) that is ultimately worthless.', 'What builds a true empire in a person\'s life?', 'fa-building')">
+                    <div class="polaroid-img"><i class="fa-solid fa-building polaroid-emoji"></i></div>
+                    <div class="polaroid-text">Develop</div>
+                </div>
+                <div class="polaroid" onclick="developPolaroid(this, 'Crown of thorns', 'A heavy burden, suffering, or deep guilt.', 'What is a heavy burden that modern society forces people to wear?', 'fa-crown')">
+                    <div class="polaroid-img"><i class="fa-solid fa-crown polaroid-emoji"></i></div>
+                    <div class="polaroid-text">Develop</div>
+                </div>
+            </div>
+            
+            <div id="polaroid-hub-1" class="hidden mt-10 w-full max-w-4xl text-left analog-panel p-6 border-l-4 border-studio-gold">
+                <p class="text-studio-gold font-impact text-2xl mb-1 uppercase tracking-wider" id="polaroid-title-1">Word</p>
+                <p class="text-gray-400 font-typewriter text-lg mb-4" id="polaroid-def-1">Definition</p>
+                <div class="bg-[#050505] p-4 border border-[#333] rounded">
+                    <span class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-widest block mb-2">Director's Prompt</span>
+                    <p class="text-white font-sans text-xl" id="polaroid-q-1">Question</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 07: DEBATE I -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 07: The Talk</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-10 uppercase tracking-widest text-center">Debate I</h1>
+            
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="analog-panel p-10 border-l-4 border-studio-red">
+                    <p class="font-impact font-black text-3xl text-white mb-4 uppercase tracking-wider">The Empire</p>
+                    <p class="font-typewriter text-gray-300 text-xl leading-relaxed mb-6">Johnny Cash had millions of dollars, sold 90 million records, and was a global icon. Yet, he calls his legacy an "empire of dirt."</p>
+                    <p class="font-sans text-white text-2xl font-bold">Do you think people only realize what truly matters when it is too late?</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 08: LEXICON II -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 08: Lexicon</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-6 uppercase tracking-widest text-center">The Pain</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-4xl mx-auto">
+                <div class="polaroid" onclick="developPolaroid(this, 'To stray', 'To wander away from the right path or lose your way.', 'Why do people sometimes sabotage their own happiness?', 'fa-route')">
+                    <div class="polaroid-img"><i class="fa-solid fa-route polaroid-emoji"></i></div>
+                    <div class="polaroid-text">Develop</div>
+                </div>
+                <div class="polaroid" onclick="developPolaroid(this, 'Familiar sting', 'A sharp, sudden pain that you are used to feeling.', 'Do people use distractions (like social media) to numb the sting of reality?', 'fa-bolt')">
+                    <div class="polaroid-img"><i class="fa-solid fa-bolt polaroid-emoji"></i></div>
+                    <div class="polaroid-text">Develop</div>
+                </div>
+            </div>
+            
+            <div id="polaroid-hub-2" class="hidden mt-10 w-full max-w-4xl text-left analog-panel p-6 border-l-4 border-studio-gold">
+                <p class="text-studio-gold font-impact text-2xl mb-1 uppercase tracking-wider" id="polaroid-title-2">Word</p>
+                <p class="text-gray-400 font-typewriter text-lg mb-4" id="polaroid-def-2">Definition</p>
+                <div class="bg-[#050505] p-4 border border-[#333] rounded">
+                    <span class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-widest block mb-2">Director's Prompt</span>
+                    <p class="text-white font-sans text-xl" id="polaroid-q-2">Question</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 09: DEBATE II -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 09: The Talk</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-10 uppercase tracking-widest text-center">Debate II</h1>
+            
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="analog-panel p-10 border-l-4 border-studio-gold">
+                    <p class="font-impact font-black text-3xl text-white mb-4 uppercase tracking-wider">The Isolation</p>
+                    <p class="font-typewriter text-gray-300 text-xl leading-relaxed mb-6">"Everyone I know goes away in the end."</p>
+                    <p class="font-sans text-white text-2xl font-bold">As we get older, our social circles shrink. Is this a natural part of life, or a failure to maintain relationships?</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 10: VISUAL MISSION -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 10: Pre-Screening</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">Visual Mission</h1>
+            
+            <div class="analog-panel p-10 md:p-14 w-full max-w-4xl mx-auto text-center border-t-4 border-[#444]">
+                <i class="fa-solid fa-eye text-5xl text-gray-500 mb-8"></i>
+                <p class="font-typewriter font-bold text-2xl md:text-3xl text-white leading-tight mb-8">"Pay close attention to the editing. How does the video contrast his past and his present?"</p>
+                <button onclick="document.getElementById('vis-hub').classList.remove('hidden'); shootConfetti();" class="btn-gold mt-4 text-sm">Reveal Goal</button>
+            </div>
+            <div id="vis-hub" class="hidden mt-10 w-full max-w-4xl bg-[#111] p-6 border-l-4 border-studio-gold text-left rounded shadow-lg">
+                <p class="font-sans text-gray-300 text-lg">It constantly cuts between young, rebellious, energetic Johnny Cash and the frail, elderly man looking back at his life.</p>
+            </div>
+        </section>
+
+        <!-- TRACK 11: THE VIDEO -->
+        <section class="slide h-full">
+            <div class="flex justify-between items-end w-full max-w-5xl mb-6">
+                <div>
+                    <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-2">Track 11</h2>
+                    <h1 class="font-impact font-black text-4xl md:text-5xl text-white uppercase tracking-widest">Hurt</h1>
+                </div>
+                <span class="bg-studio-red text-white px-2 py-1 font-bold text-[10px] font-mono tracking-widest rounded uppercase animate-pulse">Live</span>
+            </div>
+            
+            <div class="w-full max-w-5xl rounded-lg overflow-hidden border-4 border-[#222] shadow-[0_0_30px_rgba(0,0,0,0.8)] relative aspect-video bg-black">
+                <iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/8AHCfZTRGiI?rel=0" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <!-- TRACK 12: FACT CHECK -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 12: Observation</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-10 uppercase tracking-widest text-center">Fact Check</h1>
+            
+            <div class="analog-panel p-10 w-full max-w-4xl mx-auto text-center border-t-4 border-[#333]">
+                <p class="font-typewriter text-2xl text-white mb-10 leading-relaxed">
+                    "The video was filmed entirely in a modern, busy recording studio full of young musicians."
+                </p>
+                <div class="flex gap-6 justify-center">
+                    <button onclick="checkTF(this, false, 'tf-hub')" class="bg-[#111] border border-[#444] px-10 py-4 font-impact font-black text-2xl text-gray-400 uppercase tracking-widest rounded hover:border-studio-gold hover:text-white transition-all">True</button>
+                    <button onclick="checkTF(this, true, 'tf-hub')" class="bg-[#111] border border-[#444] px-10 py-4 font-impact font-black text-2xl text-gray-400 uppercase tracking-widest rounded hover:border-studio-gold hover:text-white transition-all">False</button>
+                </div>
+            </div>
+            <div id="tf-hub" class="hidden mt-8 w-full max-w-4xl bg-[#111] p-6 border-l-4 border-studio-gold text-left rounded shadow-lg">
+                <p class="text-white text-lg font-bold">False. It was filmed at the "House of Cash" museum, which was closed, abandoned, and decaying—a powerful metaphor for his fading empire.</p>
+            </div>
+        </section>
+
+        <!-- TRACK 13: LYRIC HACKER I -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 13</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-6 uppercase tracking-widest text-center">Lyric Hacker I</h1>
+            <p class="font-mono text-gray-500 text-xs mb-10 text-center uppercase tracking-widest">Click the dashed text</p>
+
+            <div class="w-full max-w-4xl mx-auto analog-panel p-10 md:p-14 text-center border-t-4 border-studio-gold">
+                <div class="space-y-6 text-3xl font-typewriter text-gray-300 leading-relaxed">
+                    <p>I <span class="lyric-hl" onclick="hackLyric(this, 'lh-1')">hurt myself</span> today</p>
+                    <p>To see if I still <span class="lyric-hl" onclick="hackLyric(this, 'lh-2')">feel</span>.</p>
+                </div>
+
+                <div id="lh-1" class="hidden mt-10 bg-[#050505] p-6 border border-[#333] rounded text-left">
+                    <span class="font-mono text-studio-red font-bold text-[10px] uppercase tracking-widest">Decode</span>
+                    <p class="text-white text-xl mt-2">Physical pain as the only proof that he is still alive. The ultimate disconnection from joy.</p>
+                </div>
+                <div id="lh-2" class="hidden mt-10 bg-[#050505] p-6 border border-[#333] rounded text-left">
+                    <span class="font-mono text-studio-gold font-bold text-[10px] uppercase tracking-widest">Grammar</span>
+                    <p class="text-white text-xl mt-2">Present Simple. He is talking about his cold, painful reality right now.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 14: LYRIC HACKER II -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 14</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-6 uppercase tracking-widest text-center">Lyric Hacker II</h1>
+
+            <div class="w-full max-w-4xl mx-auto analog-panel p-10 md:p-14 text-center border-t-4 border-[#444]">
+                <div class="space-y-6 text-3xl font-typewriter text-gray-300 leading-relaxed">
+                    <p>What have I become, my sweetest friend?</p>
+                    <p>Everyone I know <span class="lyric-hl" onclick="hackLyric(this, 'lh-3')">goes away</span> in the end.</p>
+                </div>
+
+                <div id="lh-3" class="hidden mt-10 bg-[#050505] p-6 border border-[#333] rounded text-left">
+                    <span class="font-mono text-studio-gold font-bold text-[10px] uppercase tracking-widest">Meaning Decode</span>
+                    <p class="text-white text-xl mt-2">A universal truth about aging. No matter how much money or fame you have, you cannot stop the people you love from dying or leaving.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 15: LYRIC HACKER III -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 15</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-6 uppercase tracking-widest text-center">The Climax</h1>
+
+            <div class="w-full max-w-4xl mx-auto analog-panel p-10 md:p-14 text-center border-t-4 border-studio-red">
+                <div class="space-y-6 text-3xl font-typewriter text-gray-300 leading-relaxed">
+                    <p><span class="lyric-hl" onclick="hackLyric(this, 'lh-4')">If I could</span> start again</p>
+                    <p>A million miles away</p>
+                    <p>I <span class="lyric-hl" onclick="hackLyric(this, 'lh-5')">would keep</span> myself.</p>
+                </div>
+
+                <div id="lh-4" class="hidden mt-10 bg-[#050505] p-6 border border-[#333] rounded text-left">
+                    <span class="font-mono text-studio-gold font-bold text-[10px] uppercase tracking-widest">Grammar: Condition</span>
+                    <p class="text-white text-xl mt-2">Here the song shifts from Present Reality to Imaginary Past/Future. He is creating an impossible condition.</p>
+                </div>
+                <div id="lh-5" class="hidden mt-10 bg-[#050505] p-6 border border-[#333] rounded text-left">
+                    <span class="font-mono text-studio-gold font-bold text-[10px] uppercase tracking-widest">Grammar: Result</span>
+                    <p class="text-white text-xl mt-2">The hypothetical result. If he had another chance, he wouldn't destroy his body, mind, or relationships. He would protect himself.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 16: THE AMPLIFIER DIAL (GRAMMAR METAPHOR) -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 16: Mechanics</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">The Amplifier</h1>
+            
+            <div class="analog-panel p-10 md:p-14 max-w-5xl w-full flex flex-col md:flex-row items-center gap-12 border-t-2 border-[#333]">
+                <div class="flex flex-col items-center gap-6 shrink-0 relative">
+                    <span class="font-impact font-black text-xl text-gray-500 uppercase tracking-widest" id="dial-lbl-1">Reality</span>
+                    <div class="amp-dial-container" onclick="toggleAmpDial()">
+                        <div class="dial-marks"></div>
+                        <div id="amp-dial" class="amp-dial transform -rotate-45">
+                            <div class="amp-indicator"></div>
+                        </div>
+                    </div>
+                    <span class="font-impact font-black text-xl text-studio-gold uppercase tracking-widest opacity-30" id="dial-lbl-2">Regret</span>
+                    <p class="text-[10px] font-mono text-gray-500 uppercase absolute -bottom-8">Click Dial to switch</p>
+                </div>
+
+                <div id="amp-screen" class="flex-1 w-full bg-[#050505] border-2 border-[#222] h-64 relative overflow-hidden flex items-center justify-center p-8 rounded shadow-inner">
+                    <!-- REALITY -->
+                    <div id="amp-real" class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-500" style="opacity: 1; transform: scale(1);">
+                        <p class="font-typewriter font-bold text-3xl text-gray-400 mb-4 text-center">"I make mistakes."</p>
+                        <span class="font-mono text-gray-500 text-xs uppercase tracking-widest border border-[#333] px-3 py-1 rounded">Present Simple (Fact)</span>
+                    </div>
+                    
+                    <!-- REGRET -->
+                    <div id="amp-regret" class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-500" style="opacity: 0; transform: scale(0.8);">
+                        <p class="font-typewriter font-bold text-3xl text-studio-gold mb-4 text-center">"If I were young, I would fix them."</p>
+                        <span class="font-mono text-studio-gold text-xs uppercase tracking-widest border border-studio-gold px-3 py-1 rounded">Second Conditional (Hypothetical)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 17: SYNTAX BLUEPRINT -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 17: Structure</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">The Equation</h1>
+            
+            <div class="analog-panel p-10 md:p-14 w-full max-w-5xl mx-auto flex flex-col items-center gap-8 border-t-2 border-[#333]">
+                <div class="flex flex-col md:flex-row gap-4 items-center w-full justify-center">
+                    <div class="bg-[#050505] p-6 border border-[#333] rounded text-center w-full md:w-5/12">
+                        <span class="block text-gray-500 font-mono text-[10px] font-bold uppercase tracking-widest mb-2">The Condition</span>
+                        <span class="text-3xl font-impact font-black text-white">IF + Past Simple</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-3xl text-studio-gold hidden md:block"></i>
+                    <i class="fa-solid fa-arrow-down text-3xl text-studio-gold md:hidden"></i>
+                    <div class="bg-[#050505] p-6 border border-studio-gold rounded text-center w-full md:w-5/12 shadow-[0_0_15px_rgba(212,175,55,0.1)]">
+                        <span class="block text-studio-gold font-mono text-[10px] font-bold uppercase tracking-widest mb-2">The Result</span>
+                        <span class="text-3xl font-impact font-black text-white">WOULD + Verb (Base)</span>
+                    </div>
+                </div>
+                <p class="text-xl font-typewriter text-gray-400 mt-6">"If I <span class="text-white border-b border-white">had</span> a chance, I <span class="text-studio-gold border-b border-studio-gold">would change</span> everything."</p>
+            </div>
+        </section>
+
+        <!-- TRACK 18: SYSTEM CHECK I -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 18</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">System Patch</h1>
+            
+            <div class="analog-panel p-10 md:p-14 w-full max-w-4xl mx-auto text-center border-t-4 border-[#333]">
+                <p class="font-typewriter text-3xl text-white mb-10 leading-relaxed">
+                    "If I <span class="text-gray-500 border-b-2 border-gray-500 px-4 pb-1"> (be) </span> rich, I <span class="text-studio-gold border-b-2 border-studio-gold px-4 pb-1"> (buy) </span> a studio."
+                </p>
+                
+                <div class="grid grid-cols-2 gap-6 w-full max-w-2xl mx-auto">
+                    <button class="bg-[#111] border border-[#333] p-6 font-impact font-black text-xl text-gray-400 uppercase tracking-widest rounded hover:border-studio-gold transition-colors" onclick="checkPatch(this, true, 'd1-hub')">
+                        were / would buy
+                    </button>
+                    <button class="bg-[#111] border border-[#333] p-6 font-impact font-black text-xl text-gray-400 uppercase tracking-widest rounded hover:border-studio-gold transition-colors" onclick="checkPatch(this, false, 'd1-hub')">
+                        am / will buy
+                    </button>
+                </div>
+                
+                <div id="d1-hub" class="hidden mt-8 font-mono text-studio-gold text-sm font-bold tracking-widest uppercase">> Access Granted. Note: In formal conditionals, we use 'were' for all subjects (I were, He were).</div>
+            </div>
+        </section>
+
+        <!-- TRACK 19: THE WISH SYSTEM -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 19: Advanced</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">The Wish System</h1>
+            
+            <div class="analog-panel p-10 md:p-14 w-full max-w-4xl mx-auto flex flex-col md:flex-row gap-8 items-center justify-between border-l-4 border-studio-gold">
+                <div class="flex-1">
+                    <p class="font-typewriter text-2xl text-gray-300 mb-6 leading-relaxed">To express regret about a present situation, we use:<br><br><span class="text-white font-bold text-3xl">WISH + Past Simple</span></p>
+                </div>
+                <div class="bg-[#050505] p-8 border border-[#333] rounded shadow-lg flex-1 text-center w-full">
+                    <p class="text-red-500 font-impact text-xl uppercase mb-2">Reality</p>
+                    <p class="font-typewriter text-gray-400 mb-6">"I don't have time."</p>
+                    <p class="text-studio-gold font-impact text-xl uppercase mb-2">Regret</p>
+                    <p class="font-typewriter text-white text-xl">"I wish I <span class="border-b border-studio-gold pb-1">had</span> time."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 20: TIMELINE SEQUENCER -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 20: Sequencing</h2>
+            <h1 class="font-impact font-black text-4xl md:text-5xl text-white mb-6 uppercase tracking-widest text-center">The Decay Timeline</h1>
+            <p class="font-mono text-gray-500 text-xs mb-10 text-center uppercase tracking-widest">Click the events in chronological order</p>
+
+            <div class="analog-panel p-10 w-full max-w-4xl mx-auto">
+                <div class="flex flex-col gap-4 w-full" id="timeline-container">
+                    <div class="bg-[#111] border border-[#333] p-6 rounded text-xl font-typewriter flex items-center justify-between cursor-pointer hover:border-studio-gold transition-colors timeline-item text-gray-300" data-order="3" onclick="selectTimeline(this)">
+                        <span>"I wear this crown of thorns." (The burden of legacy)</span>
+                        <span class="timeline-number font-impact font-black text-studio-gold text-2xl hidden"></span>
+                    </div>
+                    <div class="bg-[#111] border border-[#333] p-6 rounded text-xl font-typewriter flex items-center justify-between cursor-pointer hover:border-studio-gold transition-colors timeline-item text-gray-300" data-order="1" onclick="selectTimeline(this)">
+                        <span>"I hurt myself today." (Physical pain)</span>
+                        <span class="timeline-number font-impact font-black text-studio-gold text-2xl hidden"></span>
+                    </div>
+                    <div class="bg-[#111] border border-[#333] p-6 rounded text-xl font-typewriter flex items-center justify-between cursor-pointer hover:border-studio-gold transition-colors timeline-item text-gray-300" data-order="2" onclick="selectTimeline(this)">
+                        <span>"Everyone goes away." (Emotional isolation)</span>
+                        <span class="timeline-number font-impact font-black text-studio-gold text-2xl hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="timeline-hub" class="hidden mt-6 p-4 border-l-4 border-studio-gold bg-[#111] font-mono text-studio-gold text-[10px] font-bold w-full max-w-4xl mx-auto text-left tracking-widest uppercase">> Sequence matched. The emotional decay is complete.</div>
+        </section>
+
+        <!-- TRACK 21: VOCAL BOOTH -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Track 21: Pronunciation</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">Vocal Booth</h1>
+            
+            <div class="analog-panel p-10 md:p-14 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between text-center gap-8 border-t-2 border-studio-red">
+                <div class="w-full md:w-5/12 bg-[#050505] p-8 rounded border border-[#333]">
+                    <span class="block text-gray-500 font-mono text-xs font-bold uppercase tracking-widest mb-4">Written (Robotic)</span>
+                    <span class="text-3xl font-black font-impact text-white tracking-widest uppercase">IF I COULD</span>
+                </div>
+                <div class="text-4xl text-gray-600 hidden md:block"><i class="fa-solid fa-microphone-lines"></i></div>
+                <div class="w-full md:w-5/12 bg-[#111] p-8 rounded border border-studio-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]">
+                    <span class="block text-studio-gold font-mono text-xs font-bold uppercase tracking-widest mb-4">Spoken (Native)</span>
+                    <span class="text-3xl font-black font-impact text-white tracking-widest uppercase"><span class="text-studio-gold italic">I-FA</span>-COULD</span>
+                </div>
+            </div>
+            <p class="text-gray-400 font-typewriter mt-10 text-center max-w-2xl text-xl">
+                Connected speech. The 'F' links to the 'I'. Practice saying it fluidly until it feels natural.
+            </p>
+        </section>
+
+        <!-- TRACK 22: RAPID FIRE -->
+        <section class="slide" id="slide-rapid">
+            <h2 class="font-mono text-black bg-studio-red px-2 py-1 text-[10px] font-bold uppercase tracking-[0.3em] mb-4 rounded inline-block rec-glow border border-red-400">High Pressure</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-6 uppercase tracking-widest text-center">Interrogation</h1>
+            <p class="font-typewriter text-gray-300 text-xl mb-10 text-center max-w-2xl">Answer the hypothetical questions. You have <strong class="text-studio-red">15 seconds</strong> per question!</p>
+
+            <div class="analog-panel p-10 rounded w-full max-w-4xl mx-auto text-center border-4 border-[#333] relative overflow-hidden" id="rap-container">
+                <div id="rap-bg-flash" class="absolute inset-0 bg-studio-red opacity-0 pointer-events-none transition-opacity duration-300"></div>
+                <div class="relative z-10">
+                    <div class="text-5xl mb-6 text-studio-red inline-block p-4"><i class="fa-solid fa-stopwatch"></i></div>
+                    <p class="font-impact font-black text-3xl md:text-4xl text-white uppercase tracking-wider mb-10 h-24 flex items-center justify-center" id="rap-q">"If you had $10 million, what is the first thing you would buy?"</p>
+                    
+                    <div class="w-full h-2 bg-[#050505] mb-8 overflow-hidden rounded border border-[#333]">
+                        <div id="rap-timer" class="h-full bg-studio-red w-full transition-all linear"></div>
+                    </div>
+
+                    <button id="rap-btn" onclick="startRapid()" class="btn-gold px-10 py-4 text-xl">Start Tape</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 23: VOICE NOTE -->
+        <section class="slide">
+            <h2 class="font-mono text-black bg-studio-gold px-2 py-1 text-[10px] font-bold uppercase tracking-[0.3em] mb-4 rounded inline-block">Roleplay</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">The Voice Note</h1>
+
+            <div class="w-full max-w-[340px] mx-auto bg-[#0a0a0a] rounded-[2rem] border-8 border-[#222] h-[550px] shadow-[0_20px_50px_rgba(0,0,0,0.9)] relative flex flex-col overflow-hidden">
+                <div class="bg-[#111] p-4 text-center border-b border-[#333] flex justify-between items-center">
+                    <span class="font-sans font-bold text-studio-red text-xs animate-pulse">REC</span>
+                    <p class="font-sans font-bold text-white text-sm">To: My 18yo Self</p>
+                    <i class="fa-solid fa-battery-half text-gray-500"></i>
+                </div>
+                
+                <div class="flex-1 p-8 flex flex-col justify-center text-center bg-[#050505] relative">
+                    <p class="font-sans font-medium text-gray-300 text-lg mb-6 leading-relaxed relative z-10">Record a 45s message to your 18-year-old self.</p>
+                    <div class="bg-[#111] p-4 border border-[#333] rounded-lg relative z-10 text-left">
+                        <p class="font-mono text-studio-gold text-[10px] uppercase font-bold tracking-widest mb-2">Target Grammar:</p>
+                        <p class="font-sans text-sm text-white">1. Apologize for a mistake.</p>
+                        <p class="font-sans text-sm text-white mt-1">2. Tell them what you <strong class="text-studio-gold">would</strong> do differently.</p>
+                    </div>
+                </div>
+
+                <div class="bg-[#111] p-6 border-t border-[#333] flex flex-col items-center justify-center h-40 relative">
+                    <button id="vn-btn" onmousedown="startVN()" onmouseup="stopVN()" onmouseleave="stopVN()" ontouchstart="startVN()" ontouchend="stopVN()" class="w-20 h-20 rounded-full bg-studio-red flex items-center justify-center text-white text-3xl transition-transform active:scale-95 border-4 border-[#050505] shadow-[0_0_15px_rgba(225,29,72,0.4)]">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+
+                    <div id="vn-overlay" class="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center gap-4 opacity-0 pointer-events-none transition-opacity px-6 border-t border-[#333]">
+                        <span class="font-impact font-black text-xl text-studio-red uppercase tracking-widest rec-glow px-3 py-1 rounded">Recording</span>
+                        <div class="w-full h-1 bg-[#222] overflow-hidden">
+                            <div id="vn-prog" class="h-full bg-studio-red w-0"></div>
+                        </div>
+                        <span id="vn-time" class="font-mono font-bold text-studio-red text-sm">0:00 / 0:45</span>
+                    </div>
+                </div>
+            </div>
+            <div id="vn-hub" class="hidden mt-6 text-center font-mono text-studio-gold text-xs font-bold tracking-widest uppercase animate-pulse">> Audio Encrypted & Sent to the Past.</div>
+        </section>
+
+        <!-- TRACK 24: THE CROSSROADS -->
+        <section class="slide">
+            <h2 class="font-mono text-white text-[10px] font-bold uppercase tracking-[0.3em] mb-2 text-center">The Dilemma</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">The Crossroads</h1>
+
+            <div class="w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-6 items-stretch h-full min-h-[400px]">
+                <!-- Context -->
+                <div class="md:w-1/3 analog-panel p-8 text-center flex flex-col justify-center border-t-2 border-gray-600">
+                    <i class="fa-solid fa-scale-balanced text-5xl text-gray-500 mb-6"></i>
+                    <p class="font-typewriter text-xl text-white mb-6">If you had a magic button to erase all the emotional pain and regrets from your past... would you press it?</p>
+                    <p class="font-mono text-[10px] text-gray-400 font-bold uppercase tracking-widest">Choose and defend for 30s.</p>
+                </div>
+
+                <!-- Options -->
+                <div class="md:w-2/3 flex flex-col gap-4 relative" id="cross-options">
+                    <button onclick="selectPath('studio-red')" class="flex-1 bg-[#111] border border-[#333] rounded border-l-8 border-l-studio-red flex flex-col justify-center p-8 text-left group hover:bg-[#1a1a1a] transition-colors">
+                        <h3 class="font-impact font-black text-3xl text-white uppercase tracking-wider mb-2 group-hover:text-studio-red transition-colors">Erase the Pain</h3>
+                        <p class="font-sans text-gray-400">Live the rest of your life in absolute peace.</p>
+                    </button>
+                    <button onclick="selectPath('studio-gold')" class="flex-1 bg-[#111] border border-[#333] rounded border-l-8 border-l-studio-gold flex flex-col justify-center p-8 text-left group hover:bg-[#1a1a1a] transition-colors">
+                        <h3 class="font-impact font-black text-3xl text-white uppercase tracking-wider mb-2 group-hover:text-studio-gold transition-colors">Keep the Scars</h3>
+                        <p class="font-sans text-gray-400">Keep the pain, because it built who you are today.</p>
+                    </button>
+                </div>
+
+                <!-- Timer Screen -->
+                <div class="md:w-2/3 hidden analog-panel rounded flex-col items-center justify-center p-10 border-t-4" id="cross-timer">
+                    <h3 class="font-impact font-black text-3xl text-white mb-6 uppercase tracking-widest" id="ct-title">Defend your choice!</h3>
+                    <div class="w-full h-2 bg-[#050505] rounded mb-8 overflow-hidden shadow-inner border border-[#333]">
+                        <div id="ct-bar" class="h-full w-full transition-all linear"></div>
+                    </div>
+                    <p class="font-mono text-5xl font-bold text-white" id="ct-clock">0:30</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACK 25: PLATINUM RECORD -->
+        <section class="slide">
+            <h2 class="font-mono text-studio-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-2 text-center">Track 25</h2>
+            <h1 class="font-impact font-black text-4xl md:text-6xl text-white mb-10 uppercase tracking-widest text-center">Curtain Call</h1>
+            <div class="text-center relative z-20 flex flex-col items-center justify-center h-full">
+                <div class="relative mb-12">
+                    <div class="absolute inset-0 bg-studio-gold rounded-full blur-[60px] opacity-20 w-64 h-64"></div>
+                    <div class="w-72 h-72 rounded-full border-[10px] border-[#222] flex flex-col items-center justify-center bg-[#050505] shadow-2xl relative vinyl-spin z-10">
+                        <div class="absolute inset-2 rounded-full border border-white/10"></div>
+                        <div class="absolute inset-6 rounded-full border border-white/10"></div>
+                        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-studio-gold to-yellow-700 border-4 border-[#111] flex flex-col items-center justify-center shadow-inner z-20 overflow-hidden relative">
+                            <img src="https://cdn-images.dzcdn.net/images/cover/3ee70b0cf1729759dbe18934ea34c8c1/1900x1900-000000-80-0-0.jpg" class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-multiply">
+                            <div class="w-4 h-4 rounded-full bg-black relative z-30"></div>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-5xl lg:text-7xl font-impact font-black mb-4 uppercase tracking-tighter text-studio-gold drop-shadow-lg">Platinum Record</h1>
+                <p class="text-xl text-gray-300 font-typewriter mb-12">"I would keep myself. I would find a way."</p>
+                <div class="flex gap-4">
+                    <button onclick="rate(1)" class="star text-4xl opacity-30 hover:opacity-100 transition-all cursor-pointer grayscale hover:grayscale-0">⭐</button>
+                    <button onclick="rate(2)" class="star text-4xl opacity-30 hover:opacity-100 transition-all cursor-pointer grayscale hover:grayscale-0">⭐</button>
+                    <button onclick="rate(3)" class="star text-4xl opacity-30 hover:opacity-100 transition-all cursor-pointer grayscale hover:grayscale-0">⭐</button>
+                    <button onclick="rate(4)" class="star text-4xl opacity-30 hover:opacity-100 transition-all cursor-pointer grayscale hover:grayscale-0">⭐</button>
+                    <button onclick="rate(5)" class="star text-4xl opacity-30 hover:opacity-100 transition-all cursor-pointer grayscale hover:grayscale-0">⭐</button>
+                </div>
+                <button onclick="location.reload()" class="mt-12 px-10 py-4 border border-studio-gold text-studio-gold font-impact font-black uppercase tracking-widest rounded hover:bg-studio-gold hover:text-black transition-colors">Eject Tape</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- PLAYER CONTROLS (Footer) -->
+    <footer class="h-[100px] bg-[#050505] border-t border-[#333] fixed bottom-0 w-full z-40 flex items-center justify-between px-6 lg:px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.9)]">
+        <div class="flex items-center gap-4 w-1/3">
+            <div class="w-14 h-14 rounded bg-[#111] border border-[#333] hidden md:flex items-center justify-center shadow-[0_0_10px_rgba(0,0,0,0.8)] overflow-hidden">
+                <img src="https://cdn-images.dzcdn.net/images/cover/3ee70b0cf1729759dbe18934ea34c8c1/1900x1900-000000-80-0-0.jpg" alt="Cover" class="w-full h-full object-cover grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all">
+            </div>
+            <div>
+                <h4 class="font-impact font-black text-white text-sm uppercase tracking-wider">Hurt</h4>
+                <p class="text-studio-gold text-[10px] font-mono uppercase font-bold tracking-widest">Wolffy Studios</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center w-1/3 gap-1">
+            <div class="flex items-center gap-6 md:gap-8">
+                <button onclick="prevSlide()" id="btn-prev" class="text-gray-500 hover:text-white transition-colors disabled:opacity-30"><i class="fa-solid fa-backward-step text-xl"></i></button>
+                <button onclick="togglePlay(this)" class="w-12 h-12 rounded-full bg-[#1a1a1a] border border-[#333] text-white flex items-center justify-center hover:border-studio-gold transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"><i id="icon-play" class="fa-solid fa-play ml-1 hidden"></i><i id="icon-pause" class="fa-solid fa-pause"></i></button>
+                <button onclick="nextSlide()" id="btn-next" class="text-gray-500 hover:text-white transition-colors disabled:opacity-30"><i class="fa-solid fa-forward-step text-xl"></i></button>
+            </div>
+            <div class="w-full max-w-xs flex items-center gap-2">
+                <span class="text-[9px] font-mono text-gray-500" id="cur-step">01</span>
+                <div class="flex-1 h-1 bg-[#222] rounded overflow-hidden">
+                    <div id="prog-bar" class="h-full bg-studio-gold w-0 transition-all duration-300 shadow-[0_0_5px_#d4af37]"></div>
+                </div>
+                <span class="text-[9px] font-mono text-gray-500">25</span>
+            </div>
+        </div>
+
+        <div class="w-1/3 flex justify-end gap-4">
+            <button onclick="toggleTeacher()" class="bg-[#111] border border-[#333] w-10 h-10 md:w-12 md:h-12 rounded flex items-center justify-center text-gray-400 hover:text-studio-gold transition-colors">
+                <i class="fa-solid fa-sliders text-sm"></i>
+            </button>
+            <button onclick="toggleFS()" class="bg-[#111] border border-[#333] w-10 h-10 md:w-12 md:h-12 rounded hidden md:flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-expand text-sm"></i>
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        // CORE NAVIGATION
+        let current = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function updateStage() {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[current].classList.add('active');
+            
+            document.getElementById('cur-step').innerText = (current + 1).toString().padStart(2, '0');
+            document.getElementById('prog-bar').style.width = `${(current / (slides.length - 1)) * 100}%`;
+            document.getElementById('btn-prev').disabled = current === 0;
+            document.getElementById('btn-next').disabled = current === slides.length - 1;
+            document.getElementById('stage').scrollTop = 0;
+            
+            clearInterval(rapInt); clearInterval(vnInt); clearInterval(crossInt);
+        }
+
+        function nextSlide() { if(current < slides.length - 1) { current++; updateStage(); } }
+        function prevSlide() { if(current > 0) { current--; updateStage(); } }
+        function toggleFS() { if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+
+        let isPlaying = true;
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            document.getElementById('icon-play').classList.toggle('hidden', isPlaying);
+            document.getElementById('icon-pause').classList.toggle('hidden', !isPlaying);
+            document.querySelectorAll('.vinyl-spin').forEach(el => el.classList.toggle('paused', !isPlaying));
+        }
+
+        // TEACHER TOOLS
+        function toggleTeacher() { document.getElementById('teacher-panel').classList.toggle('open'); }
+        
+        function praise(txt) {
+            toggleTeacher();
+            const ov = document.getElementById('praise-overlay');
+            const pt = document.getElementById('praise-text');
+            pt.innerText = txt;
+            ov.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => pt.classList.replace('scale-50', 'scale-100'), 50);
+            shootConfetti();
+            setTimeout(() => { 
+                pt.classList.replace('scale-100', 'scale-50'); 
+                ov.classList.add('opacity-0', 'pointer-events-none'); 
+            }, 2000);
+        }
+
+        function vibe(btn, text) {
+            document.getElementById('vibe-hub').classList.remove('hidden');
+            document.querySelectorAll('.mcq-btn').forEach(b => b.classList.remove('border-studio-gold'));
+            btn.classList.add('border-studio-gold');
+            shootConfetti(0.5);
+        }
+
+        // MECHANICS: TRIVIA
+        function checkTrivia(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+            if(isCorrect) {
+                btn.classList.add('border-studio-gold');
+                btn.querySelector('span').classList.replace('text-gray-400', 'text-studio-gold');
+                document.getElementById('trivia-hub').classList.remove('hidden');
+                shootConfetti();
+            } else {
+                btn.classList.add('shake', 'border-studio-red');
+                btn.querySelector('span').classList.replace('text-gray-400', 'text-studio-red');
+            }
+        }
+
+        // MECHANICS: POLAROID
+        function developPolaroid(el, word, def, question, iconClass) {
+            if(el.classList.contains('developed')) return;
+            
+            const emojiEl = el.querySelector('.polaroid-emoji');
+            if (emojiEl) emojiEl.className = `fa-solid ${iconClass} polaroid-emoji`;
+            
+            el.classList.add('developed');
+            
+            const slide = el.closest('.slide');
+            const numDeveloped = slide.querySelectorAll('.developed').length;
+            const targetHubId = slide.querySelector('[id^="polaroid-hub-"]').id;
+            const targetHub = document.getElementById(targetHubId);
+            
+            if (targetHub) {
+                const titleNum = targetHubId.split('-')[2];
+                document.getElementById(`polaroid-title-${titleNum}`).innerText = word;
+                document.getElementById(`polaroid-def-${titleNum}`).innerText = def;
+                document.getElementById(`polaroid-q-${titleNum}`).innerText = "🗣️ " + question;
+                targetHub.classList.remove('hidden');
+            }
+            
+            if(numDeveloped === 2) shootConfetti(1);
+        }
+
+        // MECHANICS: FACT CHECK
+        function checkTF(btn, isCorrect, hub) {
+            const btns = btn.parentElement.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+            if(isCorrect) {
+                btn.classList.replace('bg-[#111]', 'bg-studio-gold');
+                btn.classList.replace('text-gray-400', 'text-black');
+                btn.classList.replace('border-[#444]', 'border-studio-gold');
+                document.getElementById(hub).classList.remove('hidden');
+                shootConfetti();
+            } else {
+                btn.classList.add('shake', 'border-studio-red', 'text-studio-red');
+            }
+        }
+
+        // MECHANICS: LYRIC HACKER
+        function hackLyric(el, hubId) {
+            el.closest('.slide').querySelectorAll('.lyric-hl').forEach(h => h.classList.remove('active'));
+            el.closest('.slide').querySelectorAll('[id^="lh-"]').forEach(h => h.classList.add('hidden'));
+            
+            el.classList.add('active');
+            document.getElementById(hubId).classList.remove('hidden');
+            shootConfetti(0.5);
+        }
+
+        // MECHANICS: AMPLIFIER DIAL (Grammar)
+        function toggleAmpDial() {
+            const dial = document.getElementById('amp-dial');
+            const real = document.getElementById('amp-real');
+            const regret = document.getElementById('amp-regret');
+            const lbl1 = document.getElementById('dial-lbl-1');
+            const lbl2 = document.getElementById('dial-lbl-2');
+
+            if(dial.classList.contains('-rotate-45')) {
+                dial.classList.replace('-rotate-45', 'rotate-45');
+                real.style.opacity = '0'; real.style.transform = 'scale(0.8)';
+                regret.style.opacity = '1'; regret.style.transform = 'scale(1)';
+                lbl1.classList.add('opacity-30'); lbl2.classList.remove('opacity-30');
+            } else {
+                dial.classList.replace('rotate-45', '-rotate-45');
+                regret.style.opacity = '0'; regret.style.transform = 'scale(0.8)';
+                real.style.opacity = '1'; real.style.transform = 'scale(1)';
+                lbl2.classList.add('opacity-30'); lbl1.classList.remove('opacity-30');
+                shootConfetti();
+            }
+        }
+
+        // MECHANICS: SYSTEM PATCH
+        function checkPatch(btn, isCorrect, hub) {
+            const btns = btn.parentElement.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+            if(isCorrect) {
+                btn.classList.replace('bg-[#111]', 'bg-studio-gold');
+                btn.classList.replace('text-gray-400', 'text-black');
+                btn.classList.replace('border-[#333]', 'border-studio-gold');
+                document.getElementById(hub).classList.remove('hidden');
+                shootConfetti();
+            } else {
+                btn.classList.add('shake', 'border-studio-red', 'text-studio-red');
+            }
+        }
+
+        // MECHANICS: TIMELINE
+        let tlClick = 0;
+        const tlExp = [1, 2, 3];
+        function selectTimeline(btn) {
+            if(btn.classList.contains('border-studio-gold')) return;
+            const ord = parseInt(btn.getAttribute('data-order'));
+            
+            if(ord === tlExp[tlClick]) {
+                tlClick++;
+                btn.classList.replace('border-[#333]', 'border-studio-gold');
+                btn.classList.replace('text-gray-300', 'text-white');
+                const num = btn.querySelector('.timeline-number');
+                num.innerText = tlClick;
+                num.classList.remove('hidden');
+                if(tlClick === 3) { document.getElementById('timeline-hub').classList.remove('hidden'); shootConfetti(); }
+            } else {
+                btn.classList.add('shake', 'border-studio-red', 'text-studio-red');
+                setTimeout(() => btn.classList.remove('shake', 'border-studio-red', 'text-studio-red'), 400);
+            }
+        }
+
+        // SIMULATORS: RAPID FIRE
+        const rapQ = [
+            "If you could live anywhere in the world right now, where would it be?",
+            "If you won the lottery tomorrow, what is the first thing you would buy?",
+            "If you could speak any language fluently, which one would you choose?"
+        ];
+        let rapIdx = 0; let rapInt;
+        function startRapid() {
+            document.getElementById('rap-btn').style.display = 'none';
+            document.getElementById('rap-container').classList.replace('border-[#333]', 'border-studio-red');
+            document.getElementById('rap-container').classList.add('shadow-[0_0_30px_rgba(225,29,72,0.3)]');
+            runRapRound();
+        }
+        function runRapRound() {
+            if(rapIdx >= rapQ.length) {
+                document.getElementById('rap-q').innerText = "INTERROGATION SURVIVED.";
+                document.getElementById('rap-q').classList.replace('text-white', 'text-studio-red');
+                document.getElementById('rap-timer').style.width = '0%';
+                shootConfetti(2);
+                return;
+            }
+            document.getElementById('rap-q').innerText = '"' + rapQ[rapIdx] + '"';
+            
+            // Screen flash effect
+            const flash = document.getElementById('rap-bg-flash');
+            flash.classList.remove('opacity-0');
+            setTimeout(() => flash.classList.add('opacity-0'), 150);
+
+            let w = 100; const bar = document.getElementById('rap-timer');
+            clearInterval(rapInt);
+            rapInt = setInterval(() => {
+                w -= (100/150); // 15s
+                bar.style.width = w + '%';
+                if(w <= 0) { clearInterval(rapInt); rapIdx++; runRapRound(); }
+            }, 100);
+        }
+
+        // SIMULATORS: VOICE NOTE
+        let vnInt; let vnSecs = 45;
+        function startVN() {
+            const btn = document.getElementById('vn-btn');
+            btn.classList.replace('bg-studio-red', 'bg-[#111]');
+            btn.classList.replace('text-white', 'text-studio-red');
+            btn.classList.replace('border-[#050505]', 'border-studio-red');
+            document.getElementById('vn-overlay').classList.remove('opacity-0', 'pointer-events-none');
+            vnSecs = 45;
+            document.getElementById('vn-time').innerText = `0:${vnSecs.toString().padStart(2,'0')} / 0:45`;
+            
+            vnInt = setInterval(() => {
+                vnSecs--;
+                document.getElementById('vn-time').innerText = `0:${vnSecs.toString().padStart(2,'0')} / 0:45`;
+                document.getElementById('vn-prog').style.width = `${((45-vnSecs)/45)*100}%`;
+                if(vnSecs <= 0) stopVN();
+            }, 1000);
+        }
+        function stopVN() {
+            clearInterval(vnInt);
+            const btn = document.getElementById('vn-btn');
+            btn.classList.replace('bg-[#111]', 'bg-studio-red');
+            btn.classList.replace('text-studio-red', 'text-white');
+            btn.classList.replace('border-studio-red', 'border-[#050505]');
+            document.getElementById('vn-overlay').classList.add('opacity-0', 'pointer-events-none');
+            if(vnSecs < 42) { document.getElementById('vn-hub').classList.remove('hidden'); shootConfetti(); }
+        }
+
+        // SIMULATORS: CROSSROADS
+        let crossInt;
+        function selectPath(color) {
+            document.getElementById('cross-options').style.display = 'none';
+            const tmr = document.getElementById('cross-timer');
+            tmr.classList.replace('hidden', 'flex');
+            tmr.classList.add('border-' + color, `shadow-[0_0_30px_var(--tw-colors-${color})]`);
+            
+            let w = 100; let secs = 30;
+            const bar = document.getElementById('ct-bar');
+            bar.classList.add('bg-' + color);
+            
+            crossInt = setInterval(() => {
+                w -= (100/300); bar.style.width = w + '%';
+                if(w % (100/30) < (100/300)) { secs--; document.getElementById('ct-clock').innerText = `0:${secs.toString().padStart(2,'0')}`; }
+                if(w <= 0) { clearInterval(crossInt); document.getElementById('ct-title').innerText = "TIME IS UP."; document.getElementById('ct-clock').classList.replace('text-white', `text-${color}`); shootConfetti(); }
+            }, 100);
+        }
+
+        // FINAL RATING
+        function rate(stars) {
+            document.querySelectorAll('.star').forEach((s, i) => {
+                if(i < stars) s.classList.remove('opacity-30', 'grayscale');
+                else s.classList.add('opacity-30', 'grayscale');
+            });
+            shootConfetti();
+        }
+
+        function shootConfetti(sec=1) {
+            if (typeof confetti !== 'function') return;
+            var duration = sec * 1000; var end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#e11d48', '#d4af37', '#ffffff'] });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#e11d48', '#d4af37', '#ffffff'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        window.onload = updateStage;
+    </script>
+</body>
+</html>
